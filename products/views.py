@@ -1,3 +1,4 @@
+from math import prod
 from os import stat
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -24,9 +25,10 @@ class ProductView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        product = Product.objects.create(**request.data)
+        Product.objects.create(**request.data)
 
-        serializer = ProductSerializer(product)
+        queryset = Product.objects.all()
+        serializer = ProductSerializer(queryset, many=True)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -45,7 +47,10 @@ class ProductView(APIView):
         product.provider = request.data['provider']
         product.amount = request.data['amount']
 
-        serializer = ProductSerializer(product)
+        product.save()
+
+        queryset = Product.objects.all()
+        serializer = ProductSerializer(queryset, many=True)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -54,4 +59,7 @@ class ProductView(APIView):
 
         product.delete()
 
-        return Response("Deleted", status=status.HTTP_204_NO_CONTENT)
+        queryset = Product.objects.all()
+        serializer = ProductSerializer(queryset, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
